@@ -1,0 +1,106 @@
+version: '3.6'
+services:
+  nginx:
+    image: nginx:latest
+    restart: unless-stopped
+    expose:
+    - 9090
+    ports:
+    - 9090:80
+    volumes:
+    -  ./default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+    - dp-server
+
+  dp-server:
+    image: eu.gcr.io/datapane/dp-server:latest
+    restart: unless-stopped
+    env_file: ./docker-local.env
+    expose:
+    - 8090
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      DOCKER_HOST: unix:///var/run/docker.sock
+    command: ["poetry", "run", "./local.sh"]
+    depends_on:
+      - db
+      - redis
+      - minio
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/site/watchman/ping/?watchman-token=glitchcore"]
+      interval: 60s
+      timeout: 20s
+      retries: 2
+
+  celery-default-io:
+    image: eu.gcr.io/datapane/dp-server:latest
+    restart: unless-stopped
+    env_file: ./docker-local.env
+    command: ["poetry", "run", "celery", "--app=celery_main:app worker", "--queues=io_bound,celery", "--pool=threads", "--concurrency=5"]
+    depends_on:
+      - db
+      - redis
+      - minio
+
+  celery-cpu:
+    image: eu.gcr.io/datapane/dp-server:latest
+    restart: unless-stopped
+    env_file: ./docker-local.env
+    command: ["poetry", "run", "celery", "--app=celery_main:app worker", "--queues=cpu_bound", "--pool=prefork"]
+    depends_on:
+      - db
+      - redis
+      - minio
+
+  celery-beat:
+    image: eu.gcr.io/datapane/dp-server:latest
+    restart: unless-stopped
+    env_file: ./docker-local.env
+    command: ["poetry", "run", "celery", "--app=celery_main:app", "beat"]
+    depends_on:
+      - db
+      - redis
+      - minio
+
+  db:
+    image: postgres:12-alpine
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    volumes:
+      - 'pg_12_data:/var/lib/postgresql/data:Z'
+    environment:
+      POSTGRES_PASSWORD: ${DP_DATABASE_PASSWORD}
+      POSTGRES_DB: ${DP_DATABASE_DATABASE}
+
+  redis:
+    image: redis:5-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - 'redis_5_data:/data:Z'
+    command: ["redis-server","--maxmemory", "32mb", "--maxmemory-policy", "allkeys-lru"]
+
+  minio:
+    image: minio/minio:latest
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+    volumes:
+      - minio_1_data:/data1
+    environment:
+      MINIO_ACCESS_KEY: minio
+      MINIO_SECRET_KEY: minio123
+    command: ["server", "start"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+volumes:
+  pg_12_data:
+  minio_1_data:
+  redis_5_data:

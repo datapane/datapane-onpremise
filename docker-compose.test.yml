@@ -1,0 +1,43 @@
+version: '3.6'
+services:
+  db:
+    image: postgres:12-alpine
+    restart: unless-stopped
+    volumes:
+      - 'pg_12_data:/var/lib/postgresql/data:Z'
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: ${DP_DATABASE_PASSWORD}
+      POSTGRES_DB: ${DP_DATABASE_DATABASE}
+
+  redis:
+    image: redis:5-alpine
+    restart: unless-stopped
+    volumes:
+      - 'redis_5_data:/data:Z'
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--maxmemory", "32mb", "--maxmemory-policy", "allkeys-lru", "--appendonly", "yes"]
+
+  minio:
+    image: minio/minio:latest
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+    volumes:
+      - minio_1_data:/data1
+    environment:
+      MINIO_ACCESS_KEY: minio
+      MINIO_SECRET_KEY: minio123
+    command: ["server", "start"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+volumes:
+  pg_12_data:
+  minio_1_data:
+  redis_5_data:
