@@ -72,13 +72,11 @@ def configure(args):
         django_secret_key=secrets.token_urlsafe(50),
     )
 
-    log.info(output)
-
     # TODO - create timestamp backup if exists
 
     Path("datapane.env").write_text(output)
 
-    print("Cool! Now add your license key in datapane.env then run `docker-compose up` to launch Datapane.")
+    print("\nThanks! Now edit the datapane.env as needed, add your license key, and run `docker-compose up` to launch Datapane.")
 
 
 def update(args):
