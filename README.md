@@ -30,7 +30,7 @@ Furthermore we offer _Datapane Enterprise_, where our skilled devops team will w
 ## Select a Datapane version number
 We recommend you set your Datapane deployment to a specific version of Datapane (that is, a specific semver version number in the format `X.Y.Z`, instead of a tag name). This will help prevent unexpected behavior in your Datapane instances. When you are ready to upgrade Datapane, you can bump the version number to the specific new version you want.
 
-To help you select a version, see our [changelog](https://docs.datapane.com/changelog). If you're not sure which version to install, the latest stable release can be found in the pip badge shown below.
+To help you select a version, see our [changelog](https://docs.datapane.com/resources/changelog). If you're not sure which version to install, the latest stable release can be found in the pip badge shown below.
 
 <a href="https://pypi.org/project/datapane/">
     <img src="https://img.shields.io/pypi/v/datapane?color=blue" alt="Latest release" />
@@ -49,9 +49,9 @@ Get set up in 15 minutes by deploying Datapane on a single machine.
 1. Run the command `git clone https://github.com/datapane/datapane-onpremise.git`.
 1. Run the command `cd datapane-onpremise` to enter the cloned repository's directory.
 1. Edit the `Dockerfile` to set the version of Datapane you want to install. To do this, replace `X.Y.Z` in `FROM datapane/dp-server:X.Y.Z` with your desired version. See [Select a Datapane version number](#select-a-datapane-version-number) to help you choose a version.
-1. Run `install.py check` to check the installation is valid and all dependencies exist
-1. Run `install.py setup` to launch the setup wizard that will generate your `docker.env` file
-1. In your `docker.env` (this file is only created after running `install.py setup`) add the following:
+1. Run `dp-setup.py check` to check the installation is valid and all dependencies exist
+1. Run `dp-setup.py setup` to launch the setup wizard that will generate your `docker.env` file
+1. In your `docker.env` (this file is only created after running `dp-setup.py setup`) add the following:
     ```
     # License key granted to you by Datapane
     LICENSE_KEY=YOUR_LICENSE_KEY 
@@ -76,9 +76,9 @@ Spin up a new EC2 instance. If using AWS, use the following steps:
 1. Run the command `git clone https://github.com/datapane/datapane-onpremise.git`.
 1. Run the command `cd datapane-onpremise` to enter the cloned repository's directory.
 1. Edit the `Dockerfile` to set the version of Datapane you want to install. To do this, replace `X.Y.Z` in `FROM datapane/dp-server:X.Y.Z` with your desired version. See [Select a Datapane version number](#select-a-datapane-version-number) to help you choose a version.
-1. Install Docker and Docker Compose and run `install.py check` to check the installation is valid.
-1. Run `install.py setup` to launch the setup wizard that will generate your `docker.env` file
-1. In your `docker.env` (this file is only created after running `install.py setup`) add the following:
+1. Install Docker and Docker Compose and run `dp-setup.py check` to check the installation is valid.
+1. Run `dp-setup.py setup` to launch the setup wizard that will generate your `docker.env` file
+1. In your `docker.env` (this file is only created after running `dp-setup.py setup`) add the following:
     ```
     # License key granted to you by Datapane
     LICENSE_KEY=YOUR_LICENSE_KEY 
@@ -110,7 +110,7 @@ Additionally, we hope to be available in the AWS, Azure, and GCS marketplaces sh
 
 ## Additional features
 
-**For details on additional features like SAML SSO, custom certs, and more, visit our [deployment docs](https://docs.datapane.com/deploy).**
+**For details on additional features like SAML SSO, custom certs, and more, visit our [deployment docs](https://docs.datapane.com/deployment).**
 
 ### Environment Variables
 
@@ -138,7 +138,7 @@ Update the version number in the first line of your `Dockerfile`.
 ```
 FROM datapane/dp-server:X.Y.Z
 ```
-Then run the included update command `install.py update` from this directory.
+Then run the included update command `dp-setup.py update` from this directory.
 
 ### Kubernetes deployments
 To update Datapane on Kubernetes, you can use the following command, replacing `X.Y.Z` with the version number or named tag that you’d like to update to.
@@ -149,7 +149,7 @@ kubectl set image deploy/api api=datapane/dp-server:X.Y.Z
 
 ## Releases
 
-Release notes can be found at https://docs.datapane.com/changelog.
+Release notes can be found at https://docs.datapane.com/resources/changelog.
 
 ## Docker cheatsheet
 
