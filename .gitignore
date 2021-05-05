@@ -20,6 +20,6 @@ dmypy.json
 *.swp
 
 # datapane specific
-/datapane.env
+/datapane.env*
 /docker-compose.yml
 
