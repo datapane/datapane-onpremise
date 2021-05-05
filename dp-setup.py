@@ -9,6 +9,8 @@ import sys
 import logging
 import os
 import secrets
+from enum import Enum
+from shutil import which
 import subprocess
 from pathlib import Path
 from typing import Dict, Iterable, List, Mapping, Optional, TextIO, Tuple
@@ -17,39 +19,44 @@ log = logging.getLogger("dp-setup")
 
 
 # commands
-# start/stop local trial
-# check deps (docker & docker compose)
-# upgrade
-# setup/configure
-
+# TODO - start/stop local trial
 def check(args):
-    print("check")
-    log.debug("debug")
-    log.info("info")
-    print(args)
+    """Check all (docker) dependencies are installed"""
+    docker_exe = which("docker")
+    if docker_exe:
+        log.debug(f"Found docker at {docker_exe}")
+        subprocess.run([docker_exe, "--version"], check=True)
+        subprocess.run([docker_exe, "info"], check=True, capture_output=True)
+    else:
+        sys.exit("docker not found, please install")
+
+    docker_compose_exe = which("docker-compose")
+    if docker_compose_exe:
+        log.debug(f"Found docker-compose at {docker_compose_exe}")
+        subprocess.run(["docker-compose", "--version"], check=True)
+    else:
+        sys.exit("docker-compose not found, please install")
+
+    print("Dependencies all provided, please run `configure` to generate your config file")
 
 
 def configure(args):
     print("configure")
-    print(args)
 
 
 def update(args):
-    print("update")
-    print(args)
-    # sudo docker-compose build --pull
-    # sudo docker-compose pull && sudo docker-compose up -d
-    # sudo docker image prune -a -f
+    """Update the docker containers"""
+    subprocess.run(["sudo", "docker-compose", "build", "--pull"], check=True)
+    subprocess.run(["sudo docker-compose pull && sudo docker-compose up -d"], shell=True, check=True)
+    subprocess.run(["sudo", "docker", "image", "prune", "-a", "-f"], check=True)
 
 
 def start(args):
-    print("start")
-    print(args)
+    subprocess.run(["sudo docker-compose up -d"], shell=True, check=True)
 
 
 def stop(args):
-    print("stop")
-    print(args)
+    subprocess.run(["sudo docker-compose down"], shell=True, check=True)
 
 
 def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
@@ -87,6 +94,8 @@ def main():
 
     if args.command:
         args.command(args)
+    else:
+        sys.exit("No command entered, use --help")
 
 
 if __name__ == "__main__":
