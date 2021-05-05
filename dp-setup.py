@@ -4,6 +4,10 @@ Datapane Server script
 
 """
 
+from ast import literal_eval
+import json
+from contextlib import suppress
+from distutils.util import strtobool
 import argparse
 import sys
 import logging
@@ -40,8 +44,41 @@ def check(args):
     print("Dependencies all provided, please run `configure` to generate your config file")
 
 
+
+
+
 def configure(args):
-    print("configure")
+    print("Hi! I'm here to help you set up a self-hosted Datapane.\n")
+    template = Path("./template.env").read_text()
+
+    # questions
+    # - min/max
+    # - continue/exit
+    # - cloud provider? not right now, S3 only
+    # - domain - allowed hosts config
+    # - https
+
+    print("Datapane can run with in a batteries-included mode with all dependencies, such as databases, or use managed services, such as AWS RDS. " +
+          "We recommend batteries-included mode for quickly trying out, and managed services for production-ready deployments")
+
+    while True:
+        with suppress(ValueError):
+            max_mode = strtobool(input("Run in batteries-included mode (Yes/No)? "))
+            break
+    # TODO - use different docker-compose file
+
+    output = template.format(
+        configuration="OrgOnPremLocal" if max_mode else "OrgOnPremCloud",
+        django_secret_key=secrets.token_urlsafe(50),
+    )
+
+    log.info(output)
+
+    # TODO - create timestamp backup if exists
+
+    Path("datapane.env").write_text(output)
+
+    print("Cool! Now add your license key in datapane.env then run `docker-compose up` to launch Datapane.")
 
 
 def update(args):
