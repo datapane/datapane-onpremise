@@ -34,21 +34,48 @@ def configure(args):
     print(args)
 
 
+def update(args):
+    print("update")
+    print(args)
+    # sudo docker-compose build --pull
+    # sudo docker-compose pull && sudo docker-compose up -d
+    # sudo docker image prune -a -f
+
+
+def start(args):
+    print("start")
+    print(args)
+
+
+def stop(args):
+    print("stop")
+    print(args)
 
 
 def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
-    # TODO - min version param
+    """Configure the arg parser"""
     parser = argparse.ArgumentParser(description="Setup and configure an on-premise Datapane Server",
                                      epilog="For more info see https://github.com/datapane/datapane-onpremise/ and https://docs.datapane.com/deployment/")
+    # main args
     parser.add_argument("--debug", action="store_true", default=False, help="Enable debug output")
-
     subparsers = parser.add_subparsers(help='Available commands', dest="command")
+
+    # subcommands
     parser_check = subparsers.add_parser("check",  help="Check all dependencies are installed")
     parser_check.set_defaults(command=check)
 
     parser_configure = subparsers.add_parser("configure",  help="Configure the datapane environment file")
     parser_configure.add_argument("--env", help="The cloud environment")
     parser_configure.set_defaults(command=configure)
+
+    parser_update = subparsers.add_parser("update",  help="Update Datapane Server to latest version")
+    parser_update.set_defaults(command=update)
+
+    parser_start = subparsers.add_parser("start",  help="Start Datapane Server (via docker-compose)")
+    parser_start.set_defaults(command=start)
+
+    parser_stop = subparsers.add_parser("stop",  help="Stop Datapane Server (via docker-compose)")
+    parser_stop.set_defaults(command=stop)
 
     return parser.parse_args(argv)
 
