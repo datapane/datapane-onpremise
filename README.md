@@ -49,8 +49,9 @@ Get set up in 15 minutes by deploying Datapane on a single machine.
 1. Run the command `git clone https://github.com/datapane/datapane-onpremise.git`.
 1. Run the command `cd datapane-onpremise` to enter the cloned repository's directory.
 1. Edit the `Dockerfile` to set the version of Datapane you want to install. To do this, replace `X.Y.Z` in `FROM datapane/dp-server:X.Y.Z` with your desired version. See [Select a Datapane version number](#select-a-datapane-version-number) to help you choose a version.
-1. Run `dp-setup.py check` to check the installation is valid and all dependencies exist
-1. Run `dp-setup.py setup` to launch the setup wizard that will generate your `docker.env` file
+1. Run `dp-setup.py check` to check the installation is valid and all dependencies exist.
+1. Run `dp-setup.py configure` to launch the setup wizard that will generate your `docker.env` file.
+   - To manually configure, simply copy `datapane.env` and a `docker-compose.yaml` file from the `/docker` dir and edit as needed.
 1. In your `docker.env` (this file is only created after running `dp-setup.py setup`) add the following:
     ```
     # License key granted to you by Datapane

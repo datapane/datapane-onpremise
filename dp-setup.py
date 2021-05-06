@@ -54,30 +54,32 @@ def configure(args):
     generates a docker-compose.yml and datapane.env suitable for running
 
     # TODO - future questions
-    # - cloud provider? not right now, S3 only
+    # - cloud provider? not right now, S3 only - see Provider enum in django config
+    # - optional redis
     # - domain - allowed hosts config
     # - https
     """
 
     print("👋 Hi! I'm here to help you set up a self-hosted Datapane Server.\n")
 
-    print("Datapane can run with in a batteries-included mode (🔋) with all dependencies, such as databases, or use managed cloud services (☁️), such as AWS RDS. " +
-          "We recommend batteries-included mode for quickly trying out, and managed services for production-ready deployments")
+    print("Datapane can run with in dev mode with all dependencies, or in prod mode using managed cloud services, such as AWS RDS. " +
+          "We recommend dev mode for trying out, and prod mode for longer term deployments.")
 
     while True:
         with suppress(ValueError):
-            local_mode = strtobool(input("Run in batteries-included mode (Yes/No)? "))
+            prod_mode = strtobool(input("Run in prod mode (Yes/No)? "))
             break
 
-    if local_mode:
-        template = Path("docker/local.env").read_text()
-        shutil.copyfile("docker/docker-compose.local.yml", "docker-compose.yml")
+    template = Path("docker/datapane.env").read_text()
+    if prod_mode:
+        print("Building prod docker-compose configuration")
+        shutil.copyfile("docker/docker-compose.prod.yml", "docker-compose.yml")
     else:
-        template = Path("docker/cloud.env").read_text()
-        shutil.copyfile("docker/docker-compose.cloud.yml", "docker-compose.yml")
+        print("Building dev docker-compose configuration")
+        shutil.copyfile("docker/docker-compose.dev.yml", "docker-compose.yml")
 
     output = template.format(
-        configuration="OrgOnPremLocal" if local_mode else "OrgOnPremCloud",
+        configuration="OrgOnPrem",
         django_secret_key=secrets.token_urlsafe(50),
     )
 
@@ -136,8 +138,8 @@ def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
 
 def main():
     args = parse_args()
-    print(args)
     logging.basicConfig(level=logging.DEBUG if args.debug else logging.INFO)
+    log.debug(args)
 
     if args.command:
         args.command(args)
