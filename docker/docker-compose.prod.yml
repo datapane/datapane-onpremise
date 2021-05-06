@@ -17,7 +17,7 @@ services:
     restart: unless-stopped
     expose:
     - 8090
-    env_file: ./docker-on-prem.env
+    env_file: ./datapane.env
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
@@ -32,17 +32,17 @@ services:
   celery-default-io:
     image: eu.gcr.io/datapane/dp-server:latest
     restart: unless-stopped
-    env_file: ./docker-on-prem.env
+    env_file: ./datapane.env
     command: ["poetry", "run", "celery", "--app=celery_main:app worker", "--queues=io_bound,celery", "--pool=threads", "--concurrency=5"]
 
   celery-cpu:
     image: eu.gcr.io/datapane/dp-server:latest
     restart: unless-stopped
-    env_file: ./docker-on-prem.env
+    env_file: ./datapane.env
     command: ["poetry", "run", "celery", "--app=celery_main:app worker", "--queues=cpu_bound", "--pool=prefork"]
 
   celery-beat:
     image: eu.gcr.io/datapane/dp-server:latest
     restart: unless-stopped
-    env_file: ./docker-on-prem.env
+    env_file: ./datapane.env
     command: ["poetry", "run", "celery", "--app=celery_main:app", "beat"]
