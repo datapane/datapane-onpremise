@@ -6,6 +6,10 @@ Datapane Server script
 
 from ast import literal_eval
 import json
+import time
+import datetime
+
+datetime.datetime.now().ctime()
 from contextlib import suppress
 from distutils.util import strtobool
 import argparse
@@ -14,7 +18,7 @@ import logging
 import os
 import secrets
 from enum import Enum
-from shutil import which
+import shutil
 import subprocess
 from pathlib import Path
 from typing import Dict, Iterable, List, Mapping, Optional, TextIO, Tuple
@@ -26,7 +30,7 @@ log = logging.getLogger("dp-setup")
 # TODO - start/stop local trial
 def check(args):
     """Check all (docker) dependencies are installed"""
-    docker_exe = which("docker")
+    docker_exe = shutil.which("docker")
     if docker_exe:
         log.debug(f"Found docker at {docker_exe}")
         subprocess.run([docker_exe, "--version"], check=True)
@@ -34,7 +38,7 @@ def check(args):
     else:
         sys.exit("docker not found, please install")
 
-    docker_compose_exe = which("docker-compose")
+    docker_compose_exe = shutil.which("docker-compose")
     if docker_compose_exe:
         log.debug(f"Found docker-compose at {docker_compose_exe}")
         subprocess.run(["docker-compose", "--version"], check=True)
@@ -44,39 +48,47 @@ def check(args):
     print("Dependencies all provided, please run `configure` to generate your config file")
 
 
-
-
-
 def configure(args):
-    print("Hi! I'm here to help you set up a self-hosted Datapane.\n")
-    template = Path("./template.env").read_text()
+    """
+    Configure the on-prem instance (for docker-compose only at present),
+    generates a docker-compose.yml and datapane.env suitable for running
 
-    # questions
-    # - min/max
-    # - continue/exit
+    # TODO - future questions
     # - cloud provider? not right now, S3 only
     # - domain - allowed hosts config
     # - https
+    """
 
-    print("Datapane can run with in a batteries-included mode with all dependencies, such as databases, or use managed services, such as AWS RDS. " +
+    print("👋 Hi! I'm here to help you set up a self-hosted Datapane.\n")
+
+    print("Datapane can run with in a batteries-included mode (🔋) with all dependencies, such as databases, or use managed cloud services (☁️), such as AWS RDS. " +
           "We recommend batteries-included mode for quickly trying out, and managed services for production-ready deployments")
 
     while True:
         with suppress(ValueError):
-            max_mode = strtobool(input("Run in batteries-included mode (Yes/No)? "))
+            local_mode = strtobool(input("Run in batteries-included mode (Yes/No)? "))
             break
-    # TODO - use different docker-compose file
+
+    if local_mode:
+        template = Path("docker/local.env").read_text()
+        shutil.copyfile("docker/docker-compose.local.yml", "docker-compose.yml")
+    else:
+        template = Path("docker/cloud.env").read_text()
+        shutil.copyfile("docker/docker-compose.cloud.yml", "docker-compose.yml")
 
     output = template.format(
-        configuration="OrgOnPremLocal" if max_mode else "OrgOnPremCloud",
+        configuration="OrgOnPremLocal" if local_mode else "OrgOnPremCloud",
         django_secret_key=secrets.token_urlsafe(50),
     )
 
-    # TODO - create timestamp backup if exists
+    out_env = Path("datapane.env")
+    if out_env.exists():
+        backup_env = f"datapane.env.{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
+        log.debug(f"Found old env, saving as {backup_env}")
+        shutil.copyfile(out_env, backup_env)
+    out_env.write_text(output)
 
-    Path("datapane.env").write_text(output)
-
-    print("\nThanks! Now edit the datapane.env as needed, add your license key, and run `docker-compose up` to launch Datapane.")
+    print("\n👍 Thanks! Now edit the datapane.env as needed, add your license key, and run `docker-compose up` to launch Datapane! 🍀")
 
 
 def update(args):
