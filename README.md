@@ -70,7 +70,7 @@ Spin up a new EC2 instance. If using AWS, use the following steps:
 1. Ensure you select the VPC that also includes the databases / API’s you will want to connect to and click **Next**.
 1. Increase the storage size to `60` GB or higher and click **Next**. 
 1. Optionally add some Tags (e.g. `app = datapane`) and click **Next**. This makes it easier to find if you have a lot of instances.
-1. Set the network security groups for ports `80`, `443`, `22` and `8090`, with sources set to `0.0.0.0/0` and `::/0`, and click **Review and Launch**. We need to open ports `80` (http) and `443` (https) so you can connect to the server from a browser, as well as port `22` (ssh) so that you can ssh into the instance to configure it and run Datapane. By default on a vanilla EC2, Datapane will run on port `8090`.
+1. Set the network security groups for ports `80`, `443`, `22` and `9090`, with sources set to `0.0.0.0/0` and `::/0`, and click **Review and Launch**. We need to open ports `80` (http) and `443` (https) so you can connect to the server from a browser, as well as port `22` (ssh) so that you can ssh into the instance to configure it and run Datapane. By default on a vanilla EC2, Datapane will run on port `9090`.
 1. On the **Review Instance Launch** screen, click **Launch** to start your instance.
 1. If you're connecting to internal databases, whitelist the VPS's IP address in your database.
 1. From your command line tool, SSH into your EC2 instance.
