@@ -59,7 +59,7 @@ def configure(args):
     # - https
     """
 
-    print("👋 Hi! I'm here to help you set up a self-hosted Datapane.\n")
+    print("👋 Hi! I'm here to help you set up a self-hosted Datapane Server.\n")
 
     print("Datapane can run with in a batteries-included mode (🔋) with all dependencies, such as databases, or use managed cloud services (☁️), such as AWS RDS. " +
           "We recommend batteries-included mode for quickly trying out, and managed services for production-ready deployments")
