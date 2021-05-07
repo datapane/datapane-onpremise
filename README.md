@@ -37,9 +37,24 @@ To help you select a version, see our [changelog](https://docs.datapane.com/reso
 </a>
 
 
+## dp-setup
+
+`dp-setup.py` is a simple Python 3 script to help manage setup your Datapane Server on-premise installation.
+
+It currently supports docker-compose deployments and has 3 main commands,
+- `check` - check all required dependencies
+- `configure` - generate a docker-compose.yaml file and datapane.env configuration to run
+  - this command can be run headlessly
+  - this command is optional, you can copy the docker files from `./docker/` and edit them yourselves manually
+- `upgrade` - update the Datapane Server installation
+
+To use, follow the deployment instructions below.
+
+
 ## Simple Deployments
 
 Get set up in 15 minutes by deploying Datapane on a single machine. 
+
 
 ### Docker compose
 
@@ -48,15 +63,16 @@ Get set up in 15 minutes by deploying Datapane on a single machine.
 1. Install Docker and Docker Compose
 1. Run the command `git clone https://github.com/datapane/datapane-onpremise.git`.
 1. Run the command `cd datapane-onpremise` to enter the cloned repository's directory.
-1. Edit the `Dockerfile` to set the version of Datapane you want to install. To do this, replace `X.Y.Z` in `FROM datapane/dp-server:X.Y.Z` with your desired version. See [Select a Datapane version number](#select-a-datapane-version-number) to help you choose a version.
 1. Run `dp-setup.py check` to check the installation is valid and all dependencies exist.
 1. Run `dp-setup.py configure` to launch the setup wizard that will generate your `docker.env` file.
    - To manually configure, simply copy `datapane.env` and a `docker-compose.yaml` file from the `/docker` dir and edit as needed.
-1. In your `docker.env` (this file is only created after running `dp-setup.py setup`) add the following:
+1. In your `datapane.env` add the following:
     ```
     # License key granted to you by Datapane
     LICENSE_KEY=YOUR_LICENSE_KEY 
     ```
+1. (Optional) Edit the `docker-compose.yaml` file to set the version of Datapane you want to install. To do this, replace `X.Y.Z` in `FROM datapane/dp-server:X.Y.Z` with your desired version. See [Select a Datapane version number](#select-a-datapane-version-number) to help you choose a version.
+
 1. Run `docker-compose up -d` to start the Datapane server.
 1. Run `docker-compose ps` to make sure all the containers are up and running.
 
