@@ -8,8 +8,8 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_PASSWORD: ${DP_DATABASE_PASSWORD}
-      POSTGRES_DB: ${DP_DATABASE_DATABASE}
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: datapane
 
   redis:
     image: redis:5-alpine
@@ -26,11 +26,14 @@ services:
     ports:
       - "9000:9000"
     volumes:
-      - minio_1_data:/data1
+      - 'minio_1_data:/export:Z'
+      - 'minio_1_config:/root/.minio:Z'
     environment:
       MINIO_ACCESS_KEY: minio
       MINIO_SECRET_KEY: minio123
-    command: ["server", "start"]
+    # command: ["server", "start"]
+    entrypoint: sh
+    command: -c 'mkdir -p /export/datapane && /usr/bin/minio server /export'
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
       interval: 30s
@@ -40,4 +43,5 @@ services:
 volumes:
   pg_12_data:
   minio_1_data:
+  minio_1_config:
   redis_5_data:

@@ -69,18 +69,29 @@ def configure(args):
                 break
 
     template = Path("docker/datapane.env").read_text()
+    # common template params
+    params = dict(
+        django_secret_key=secrets.token_urlsafe(50)
+    )
     if prod_mode:
         print("Building prod docker-compose configuration")
         shutil.copyfile("docker/docker-compose.prod.yml", "docker-compose.yml")
+        params.update(
+            aws_access_key="",
+            aws_secret_key="",
+            aws_endpoint_url=""
+        )
     else:
         print("Building dev docker-compose configuration")
         shutil.copyfile("docker/docker-compose.dev.yml", "docker-compose.yml")
+        params.update(
+            aws_access_key="minio",
+            aws_secret_key="minio123",
+            aws_endpoint_url="AWS_S3_ENDPOINT_URL=http://localhost:9000/minio"
+        )
 
-    output = template.format(
-        configuration="OrgOnPrem",
-        django_secret_key=secrets.token_urlsafe(50),
-    )
-
+    output = template.format(**params)
+    log.debug(params)
     out_env = Path("datapane.env")
     if out_env.exists():
         backup_env = f"datapane.env.{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
