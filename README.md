@@ -75,8 +75,8 @@ Get set up in 15 minutes by deploying Datapane on a single machine.
 
 1. Run `docker-compose up -d` to start the Datapane server.
 1. Run `docker-compose ps` to make sure all the containers are up and running.
-
-
+1. Run `docker-compose run dp-server python manage.py dp_initial_setup`
+  - This will populate the datapane server with the intial users and settings - you need to run this whenever you wipe your instance
 
 ### Deploying on EC2
 Spin up a new EC2 instance. If using AWS, use the following steps:
@@ -102,6 +102,7 @@ Spin up a new EC2 instance. If using AWS, use the following steps:
     ```
 1. Run `sudo docker-compose up -d` to start the Datapane server.
 1. Run `sudo docker-compose ps` to make sure all the containers are up and running.
+1. Run `docker-compose run dp-server python manage.py dp_initial_setup`
 1. Navigate to your server's IP address in a web browser. Datapane should now be running on port `3000`.
 1. Click Sign Up, since we're starting from a clean slate. The first user to into an instance becomes the administrator. 
 
@@ -137,7 +138,7 @@ You can set environment variables to enable custom functionality like storage ba
 
 <!-- TODO: Add other watchman endpoint -->
 
-Datapane also has a health check endpoint that you can set up to monitor liveliness of Datapane. You can configure your probe to make a `GET` request to `/site/watchman/ping/`.
+Datapane also has a health check endpoint that you can set up to monitor liveliness of Datapane. You can configure your probe to make a `GET` request to `/site/watchman/`.
 
 ## Troubleshooting
 
