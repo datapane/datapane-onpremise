@@ -13,7 +13,7 @@ services:
     - dp-server
 
   dp-server:
-    image: eu.gcr.io/datapane/dp-server:latest
+    image: datapane/dp-server:latest
     restart: unless-stopped
     env_file: ./datapane.env
     expose:
@@ -34,7 +34,7 @@ services:
       retries: 2
 
   celery-default-io:
-    image: eu.gcr.io/datapane/dp-server:latest
+    image: datapane/dp-server:latest
     restart: unless-stopped
     env_file: ./datapane.env
     command: ["poetry", "run", "celery", "--app=celery_main:app worker", "--queues=io_bound,celery", "--pool=threads", "--concurrency=5"]
@@ -44,7 +44,7 @@ services:
       - minio
 
   celery-cpu:
-    image: eu.gcr.io/datapane/dp-server:latest
+    image: datapane/dp-server:latest
     restart: unless-stopped
     env_file: ./datapane.env
     command: ["poetry", "run", "celery", "--app=celery_main:app worker", "--queues=cpu_bound", "--pool=prefork"]
@@ -54,7 +54,7 @@ services:
       - minio
 
   celery-beat:
-    image: eu.gcr.io/datapane/dp-server:latest
+    image: datapane/dp-server:latest
     restart: unless-stopped
     env_file: ./datapane.env
     command: ["poetry", "run", "celery", "--app=celery_main:app", "beat"]
@@ -66,6 +66,7 @@ services:
   db:
     image: postgres:12-alpine
     restart: unless-stopped
+    command: postgres -c shared_buffers=256MB -c max_connections=200
     ports:
       - "5432:5432"
     volumes:
