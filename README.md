@@ -75,10 +75,31 @@ Get set up in 15 minutes by deploying Datapane on a single machine.
 
 1. Run `docker-compose up -d` to start the Datapane server.
 1. Run `docker-compose ps` to make sure all the containers are up and running.
-1. Run `docker-compose run dp-server python manage.py dp_initial_setup`
-  - This will populate the datapane server with the intial users and settings - you need to run this whenever you wipe your instance
+1. Run `docker-compose run dp-server ./reset.sh`
+  - This will populate the datapane server with the initial users and settings - you can run this whenever you want reset your instance
 
-### Deploying on EC2
+### Deploying on AWS (EC2 and S3)
+
+### S3
+
+S3 is used to store all your report assets, e.g. plots, tables, etc.
+
+1. Create an private S3 bucket, e.g. `datapane-assets`
+1. In the S3 console, select the bucket and click **Permissios**. Scroll down the CORS section and set the CORS configuration on the bucket the following,
+```json
+[
+    {
+        "MaxAgeSeconds": 3600,
+        "AllowedHeaders": [],
+        "AllowedMethods": ["GET", "HEAD"],
+        "AllowedOrigins": ["*"],
+        "ExposeHeaders": []
+    }
+]
+```
+1. Make a note of the bucket settings, including region, when editing your `datapane.env` file as mentioned futher on. 
+
+#### EC2
 Spin up a new EC2 instance. If using AWS, use the following steps:
 1. Click **Launch Instance** from the EC2 dashboard.
 1. Click **Select** for an instance of Ubuntu `16.04` or higher.
@@ -89,6 +110,8 @@ Spin up a new EC2 instance. If using AWS, use the following steps:
 1. Set the network security groups for ports `80`, `443`, `22` and `9090`, with sources set to `0.0.0.0/0` and `::/0`, and click **Review and Launch**. We need to open ports `80` (http) and `443` (https) so you can connect to the server from a browser, as well as port `22` (ssh) so that you can ssh into the instance to configure it and run Datapane. By default on a vanilla EC2, Datapane will run on port `9090`.
 1. On the **Review Instance Launch** screen, click **Launch** to start your instance.
 1. If you're connecting to internal databases, whitelist the VPS's IP address in your database.
+
+#### dp-server setup
 1. From your command line tool, SSH into your EC2 instance.
 1. Run the command `git clone https://github.com/datapane/datapane-onpremise.git`.
 1. Run the command `cd datapane-onpremise` to enter the cloned repository's directory.
@@ -100,9 +123,9 @@ Spin up a new EC2 instance. If using AWS, use the following steps:
     # License key granted to you by Datapane
     LICENSE_KEY=YOUR_LICENSE_KEY 
     ```
+1. Run `docker-compose run dp-server ./reset.sh`
 1. Run `sudo docker-compose up -d` to start the Datapane server.
 1. Run `sudo docker-compose ps` to make sure all the containers are up and running.
-1. Run `docker-compose run dp-server python manage.py dp_initial_setup`
 1. Navigate to your server's IP address in a web browser. Datapane should now be running on port `3000`.
 1. Click Sign Up, since we're starting from a clean slate. The first user to into an instance becomes the administrator. 
 
