@@ -53,5 +53,8 @@ services:
     ports:
       - "6379:6379"
     volumes:
-      - 'redis_5_data:/data:Z'
+      - 'redis_1_data:/data:Z'
     command: ["redis-server","--maxmemory", "32mb", "--maxmemory-policy", "allkeys-lru"]
+
+volumes:
+  redis_1_data:
