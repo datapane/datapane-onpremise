@@ -105,9 +105,8 @@ def configure(args):
 
 def update(args):
     """Update the docker containers"""
-    subprocess.run(["sudo", "docker-compose", "build", "--pull"], check=True)
-    subprocess.run(["sudo docker-compose pull && sudo docker-compose up -d"], shell=True, check=True)
     subprocess.run(["sudo", "docker", "image", "prune", "-a", "-f"], check=True)
+    subprocess.run(["sudo docker-compose pull && sudo docker-compose up -d"], shell=True, check=True)
 
 
 # def start(args):
