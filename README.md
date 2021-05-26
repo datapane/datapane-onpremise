@@ -73,10 +73,13 @@ Get set up in 15 minutes by deploying Datapane on a single machine.
     ```
 1. (Optional) Edit the `docker-compose.yaml` file to set the version of Datapane you want to install. To do this, replace `X.Y.Z` in `FROM datapane/dp-server:X.Y.Z` with your desired version. See [Select a Datapane version number](#select-a-datapane-version-number) to help you choose a version.
 
-1. Run `docker-compose up -d` to start the Datapane server.
-1. Run `docker-compose ps` to make sure all the containers are up and running.
-1. Run `docker-compose run dp-server ./reset.sh`
+1. Run `docker-compose pull` to pull all the images
+1. Run `docker-compose run server ./reset.sh`
   - This will populate the datapane server with the initial users and settings - you can run this whenever you want reset your instance
+1. (Optional) Run `docker-compose run server make test-org`
+  - This will test your Datapane Server setup and make sure everything is working as intended
+1. Run `docker-compose up -d` to start the Datapane server and all related components.
+1. Run `docker-compose ps` to make sure all the containers are up and running.
 
 ### Deploying on AWS (EC2 and S3)
 
@@ -123,7 +126,9 @@ Spin up a new EC2 instance. If using AWS, use the following steps:
     # License key granted to you by Datapane
     LICENSE_KEY=YOUR_LICENSE_KEY 
     ```
-1. Run `docker-compose run dp-server ./reset.sh`
+1. Run `sudo docker-compose pull` to pull all the images
+1. Run `sudo docker-compose run server ./reset.sh`
+1. (Optional) Run `docker-compose run server make test-org`
 1. Run `sudo docker-compose up -d` to start the Datapane server.
 1. Run `sudo docker-compose ps` to make sure all the containers are up and running.
 1. Navigate to your server's IP address in a web browser. Datapane should now be running on port `3000`.
@@ -141,7 +146,7 @@ Spin up a new EC2 instance. If using AWS, use the following steps:
 
 🚧 **Coming Soon**
 
-## Managed deployments
+## Managed on-prem deployments
 
 🚧 **Coming Soon**
 
@@ -149,13 +154,25 @@ Deploy Datapane on a managed service. We're working on providing some starter te
 
 Additionally, we hope to be available in the AWS, Azure, and GCS marketplaces shortly.
 
+## Next Steps
+
+Once you have Datapane Server installed and running, you'll want to get invite users, setup groups, and more - please see the [getting started docs](https://docs.datapane.com/datapane-teams)
+
+By default there are 2 users created, 
+- `admin` (password `admin-stackhut`) - this is the instance superuser with full permissions.
+- `datapane` (password `datapane-stackhut`) - a demo user which is used to create all the examples and demos. This user has no permissions and can safely be deleted if needed.
+
+The `admin` user also has permissions to access the management panel, available at `/dp-admin/` - however be aware when working with the management panel.
+
+We recommend changing the admin password immediately once logged-in from the settings page, and inviting and using extra users rather than using the admin user for day-to-day usage.
+
 ## Additional features
 
 **For details on additional features like SAML SSO, custom certs, and more, visit our [deployment docs](https://docs.datapane.com/deployment).**
 
 ### Environment Variables
 
-You can set environment variables to enable custom functionality like storage backends, customizing logs, and much more. For a list of all environment variables visit our [docs](https://docs.datapane.com/deployment/environment-variables).
+You can set environment variables in the `datapane.env` file to enable custom functionality like storage backends, customizing logs, and much more. For a list of all environment variables visit our [docs](https://docs.datapane.com/deployment/environment-variables).
 
 ### Health check endpoint 
 

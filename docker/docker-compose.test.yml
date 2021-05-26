@@ -3,10 +3,14 @@ services:
   db:
     image: postgres:12-alpine
     restart: unless-stopped
+    command: postgres -c shared_buffers=256MB -c max_connections=200
+    expose:
+      - 5432
+    # uncomment to expose postgres to host
+    # ports:
+    #   - "5432:5432"
     volumes:
-      - 'pg_12_data:/var/lib/postgresql/data:Z'
-    ports:
-      - "5432:5432"
+      - "pg_12_data:/var/lib/postgresql/data:Z"
     environment:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: datapane
@@ -14,20 +18,26 @@ services:
   redis:
     image: redis:5-alpine
     restart: unless-stopped
+    expose:
+      - 6379
+    # uncomment to expose redis to host
+    # ports:
+    #   - "6379:6379"
     volumes:
-      - 'redis_5_data:/data:Z'
-    ports:
-      - "6379:6379"
-    command: ["redis-server", "--maxmemory", "32mb", "--maxmemory-policy", "allkeys-lru", "--appendonly", "yes"]
+      - "redis_5_data:/data:Z"
+    command: ["redis-server", "--maxmemory", "64mb", "--maxmemory-policy", "allkeys-lru", "--appendonly", "yes"]
 
   minio:
     image: minio/minio:latest
     restart: unless-stopped
-    ports:
-      - "9000:9000"
+    expose:
+      - 9000
+    # uncomment to expose mgmt ui
+    # ports:
+    #   - "9000:9000"
     volumes:
-      - 'minio_1_data:/export:Z'
-      - 'minio_1_config:/root/.minio:Z'
+      - "minio_1_data:/export:Z"
+      - "minio_1_config:/root/.minio:Z"
     environment:
       MINIO_ACCESS_KEY: minio
       MINIO_SECRET_KEY: minio123
@@ -35,7 +45,7 @@ services:
     entrypoint: sh
     command: -c 'mkdir -p /export/datapane && /usr/bin/minio server /export'
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      test: ["CMD", "curl", "-f", "http://minio:9000/minio/health/live"]
       interval: 30s
       timeout: 20s
       retries: 3

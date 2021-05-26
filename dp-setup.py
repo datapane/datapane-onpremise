@@ -84,10 +84,11 @@ def configure(args):
     else:
         print("Building dev docker-compose configuration")
         shutil.copyfile("docker/docker-compose.dev.yml", "docker-compose.yml")
+        shutil.copyfile("docker/nginx.conf", "nginx.conf")
         params.update(
             aws_access_key="minio",
             aws_secret_key="minio123",
-            aws_endpoint_url="AWS_S3_ENDPOINT_URL=http://localhost:9000/minio"
+            aws_endpoint_url="AWS_S3_ENDPOINT_URL=http://minio:9000"
         )
 
     output = template.format(**params)
