@@ -74,10 +74,10 @@ Get set up in 15 minutes by deploying Datapane on a single machine.
     ```
 -->
 1. (Optional) Edit the `docker-compose.yaml` file to set the version of Datapane you want to install. To do this, replace `X.Y.Z` in `FROM datapane/dp-server:X.Y.Z` with your desired version. See [Select a Datapane version number](#select-a-datapane-version-number) to help you choose a version.
+1. Run `docker-compose run server ./reset.sh`. This will populate the datapane server with the initial users and settings - you can run this whenever you want reset your instance.
 1. Run `docker-compose up -d` to start the Datapane server.
 1. Run `docker-compose ps` to make sure all the containers are up and running.
-1. Run `docker-compose run dp-server ./reset.sh`
-  - This will populate the datapane server with the initial users and settings - you can run this whenever you want reset your instance
+1. Login to your instance using the credentials in [next steps](#next-steps)
 
 ## Cloud deployments
 
@@ -142,7 +142,7 @@ Spin up a new EC2 instance. If using AWS, use the following steps:
 1. Run `sudo docker-compose up -d` to start the Datapane server.
 1. Run `sudo docker-compose ps` to make sure all the containers are up and running.
 1. Navigate to your server's IP address in a web browser. Datapane should now be running on port `8090`.
-
+1. Login to your instance using the credentials in [next steps](#next-steps)
 
 #### Load Balancer (Optional)
 It it recommended that you run your cloud instance behind a load balancer such as ELB, which can provide SSL termination. If you use a load balancer, make sure to update the `DOMAIN` setting in your `datapane.env` file to point to your new external URL (including the port and protocol - e.g. `https://your-datapane-server.your-company.com:8000`)
@@ -193,7 +193,7 @@ The latest Datapane releases can be pulled from Docker Hub. When you run an on-p
 <!--See more information on our different versions and recommended update strategies in [our documentation](https://docs.datapane.com/deployment).
 -->
 
-### Docker Compose deployments
+### Updating Docker Compose deployments
 Update the version number in your `docker-compose.yml`.
 ```
 FROM datapane/dp-server:X.Y.Z
@@ -207,6 +207,19 @@ To update Datapane on Kubernetes, you can use the following command, replacing `
 kubectl set image deploy/api api=datapane/dp-server:X.Y.Z
 ```
 -->
+
+## Next Steps
+
+Once you have Datapane Server installed and running, you'll want to get invite users, setup groups, and more - please see the [getting started docs](https://docs.datapane.com/datapane-teams)
+
+By default there are 2 users created, 
+- `admin` (password `admin-stackhut`) - this is the instance superuser with full permissions.
+- `datapane` (password `datapane-stackhut`) - a demo user which is used to create all the examples and demos. This user has no permissions and can safely be deleted if needed.
+
+The `admin` user also has permissions to access the management panel, available at `/dp-admin/` - however be aware when working with the management panel.
+
+We recommend changing the admin password immediately once logged-in from the settings page, and inviting and using extra users rather than using the admin user for day-to-day usage.
+
 ## Releases
 
 Release notes can be found at https://docs.datapane.com/resources/changelog.
