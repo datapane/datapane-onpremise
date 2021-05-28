@@ -13,6 +13,8 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     command: ["./local.sh"]
+    depends_on:
+      - redis
     healthcheck:
       test: ["CMD", "curl", "-f", "http://server:80/site/watchman/ping/"]
       interval: 60s
@@ -26,6 +28,8 @@ services:
     environment:
       C_FORCE_ROOT: 1
     command: ["celery", "--app=celery_main:app", "worker", "--queues=io_bound,celery", "--pool=threads", "--concurrency=5"]
+    depends_on:
+      - redis
 
   celery-cpu:
     image: datapane/dp-server:latest
@@ -34,12 +38,16 @@ services:
     environment:
       C_FORCE_ROOT: 1
     command: ["celery", "--app=celery_main:app", "worker", "--queues=cpu_bound", "--pool=prefork"]
+    depends_on:
+      - redis
 
   celery-beat:
     image: datapane/dp-server:latest
     restart: unless-stopped
     env_file: ./datapane.env
     command: ["celery", "--app=celery_main:app", "beat"]
+    depends_on:
+      - redis
 
   redis:
     image: redis:5-alpine
