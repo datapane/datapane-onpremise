@@ -3,12 +3,12 @@ services:
   db:
     image: postgres:12-alpine
     restart: unless-stopped
-    command: postgres -c shared_buffers=256MB -c max_connections=200
+    # command: postgres -c shared_buffers=256MB -c max_connections=200
     expose:
       - 5432
     # uncomment to expose postgres to host
-    # ports:
-    #   - "5432:5432"
+    #ports:
+    #  - "5432:5432"
     volumes:
       - "pg_12_data:/var/lib/postgresql/data:Z"
     environment:
@@ -21,8 +21,8 @@ services:
     expose:
       - 6379
     # uncomment to expose redis to host
-    # ports:
-    #   - "6379:6379"
+    #ports:
+    #  - "6379:6379"
     volumes:
       - "redis_5_data:/data:Z"
     command: ["redis-server", "--maxmemory", "64mb", "--maxmemory-policy", "allkeys-lru", "--appendonly", "yes"]
@@ -32,16 +32,15 @@ services:
     restart: unless-stopped
     expose:
       - 9000
-    # uncomment to expose mgmt ui
-    # ports:
-    #   - "9000:9000"
+    ports:
+      - "9000:9000"
     volumes:
       - "minio_1_data:/export:Z"
       - "minio_1_config:/root/.minio:Z"
     environment:
       MINIO_ACCESS_KEY: minio
       MINIO_SECRET_KEY: minio123
-    # command: ["server", "start"]
+    #command: ["server", "/data"]
     entrypoint: sh
     command: -c 'mkdir -p /export/datapane && /usr/bin/minio server /export'
     healthcheck:

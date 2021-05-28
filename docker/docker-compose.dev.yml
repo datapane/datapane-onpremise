@@ -19,6 +19,8 @@ services:
       DOCKER_HOST: unix:///var/run/docker.sock
     expose:
     - 8090
+    ports:
+    - "8090:8090"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     command: ["./local.sh"]
@@ -106,7 +108,7 @@ services:
     environment:
       MINIO_ACCESS_KEY: minio
       MINIO_SECRET_KEY: minio123
-    # command: ["server", "start"]
+    #command: ["server", "/data"]
     entrypoint: sh
     command: -c 'mkdir -p /export/datapane && /usr/bin/minio server /export'
     healthcheck:
