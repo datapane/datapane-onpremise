@@ -6,15 +6,16 @@
 
 # Deploying Datapane on-premise
 
-Deploying Datapane on-premise ensures that all access to internal data is managed within your own cloud environment. You also have the flexibility to control how Datapane is setup within your infrastructure, configure logging, and enable custom features such as SAML SSO (under development).
+Deploying Datapane on-premise ensures that all access to internal data is managed within your own cloud environment. You also have the flexibility to control how Datapane is setup within your infrastructure and integrate Datapane more closely with the other platforms you use.
 
-We also provide a fully-managed hosted version of Datapane - this is always up-to-date and managed by the Datapane Team - see our [pricing page](https://datapane.com/pricing/).
-Furthermore we offer _Datapane Enterprise_, where our skilled devops team will work with yourself to customise and install Datapane on your own infrastructure, again, please see our [pricing page](https://datapane.com/pricing/) 
+We also provide a fully-managed hosted version of Datapane - this is always up-to-date and managed by the Datapane team. Furthermore we offer _Datapane Enterprise_, where our team will work with yourself to customise, install, and manage Datapane on your own infrastructure. For information on either option, see our [pricing page](https://datapane.com/pricing/).
 
 # Table of contents
 - [Select a Datapane version number](#select-a-datapane-version-number)
 - [Simple deployments](#simple-deployments)
-    - [EC2 and Docker](#deploying-on-ec2)
+   - [Docker-compose](#docker-compose)
+- [Cloud deployments](#cloud-deployments)
+    - [AWS](#deploying-on-aws)
     - [Heroku](#deploying-on-heroku)
     - [Aptible](#running-datapane-using-aptible)
     - [Render](#deploying-to-render)
@@ -64,31 +65,32 @@ Get set up in 15 minutes by deploying Datapane on a single machine.
 1. Run the command `git clone https://github.com/datapane/datapane-onpremise.git`.
 1. Run the command `cd datapane-onpremise` to enter the cloned repository's directory.
 1. Run `dp-setup.py check` to check the installation is valid and all dependencies exist.
-1. Run `dp-setup.py configure` to launch the setup wizard that will generate your `docker.env` file.
+1. Run `dp-setup.py configure` and choose the `Dev` option to launch the setup wizard that will generate your `docker.env` file.
    - To manually configure, simply copy `datapane.env` and a `docker-compose.yaml` file from the `/docker` dir and edit as needed.
-1. In your `datapane.env` add the following:
+<!--1. In your `datapane.env` add the following:
     ```
     # License key granted to you by Datapane
     LICENSE_KEY=YOUR_LICENSE_KEY 
     ```
+-->
 1. (Optional) Edit the `docker-compose.yaml` file to set the version of Datapane you want to install. To do this, replace `X.Y.Z` in `FROM datapane/dp-server:X.Y.Z` with your desired version. See [Select a Datapane version number](#select-a-datapane-version-number) to help you choose a version.
-
-1. Run `docker-compose pull` to pull all the images
-1. Run `docker-compose run server ./reset.sh`
-  - This will populate the datapane server with the initial users and settings - you can run this whenever you want reset your instance
-1. (Optional) Run `docker-compose run server make test-org`
-  - This will test your Datapane Server setup and make sure everything is working as intended
-1. Run `docker-compose up -d` to start the Datapane server and all related components.
+1. Run `docker-compose run server ./reset.sh`. This will populate the datapane server with the initial users and settings - you can run this whenever you want reset your instance.
+1. Run `docker-compose up -d` to start the Datapane server.
 1. Run `docker-compose ps` to make sure all the containers are up and running.
+1. Login to your instance using the credentials in [next steps](#next-steps)
 
-### Deploying on AWS (EC2 and S3)
+## Cloud deployments
 
-### S3
+### Deploying on AWS
+
+Datapane can be run on AWS (or other cloud platforms) using their existing primitives. Unlike running the standalone `docker-compose` option above, this approach uses your cloud's storage and database backends, which is strongly recommended for any production deployments.
+
+#### S3
 
 S3 is used to store all your report assets, e.g. plots, tables, etc.
 
 1. Create an private S3 bucket, e.g. `datapane-assets`
-1. In the S3 console, select the bucket and click **Permissios**. Scroll down the CORS section and set the CORS configuration on the bucket the following,
+1. In the S3 console, select the bucket and click **Permissions**. Scroll down the CORS section and set the CORS configuration on the bucket the following,
 ```json
 [
     {
@@ -100,39 +102,50 @@ S3 is used to store all your report assets, e.g. plots, tables, etc.
     }
 ]
 ```
-1. Make a note of the bucket settings, including region, when editing your `datapane.env` file as mentioned futher on. 
+1. Make a note of the bucket settings, including region, as you will need them editing your `datapane.env` file as mentioned futher on. 
+
+#### RDS (Postgres)
+If you do not have an existing Postgres database, setup a standard Postgres database using RDS. Make sure your RDS instance is accessible from your EC2 server instance. This may take a few minutes to boot, so continue with the rest of the steps while you wait.
 
 #### EC2
 Spin up a new EC2 instance. If using AWS, use the following steps:
 1. Click **Launch Instance** from the EC2 dashboard.
-1. Click **Select** for an instance of Ubuntu `16.04` or higher.
+1. Click **Select** and select a Linux instance, such as Amazon Linux 2 or Ubuntu `16.04` or higher.
 1. Select an instance type of at least `t3.medium` and click **Next**.
-1. Ensure you select the VPC that also includes the databases / API’s you will want to connect to and click **Next**.
-1. Increase the storage size to `60` GB or higher and click **Next**. 
-1. Optionally add some Tags (e.g. `app = datapane`) and click **Next**. This makes it easier to find if you have a lot of instances.
-1. Set the network security groups for ports `80`, `443`, `22` and `9090`, with sources set to `0.0.0.0/0` and `::/0`, and click **Review and Launch**. We need to open ports `80` (http) and `443` (https) so you can connect to the server from a browser, as well as port `22` (ssh) so that you can ssh into the instance to configure it and run Datapane. By default on a vanilla EC2, Datapane will run on port `9090`.
-1. On the **Review Instance Launch** screen, click **Launch** to start your instance.
-1. If you're connecting to internal databases, whitelist the VPS's IP address in your database.
+1. Ensure you select a VPC that will include the database you will want to connect to and click **Next: Add Storage**.
+1. Increase the storage size to `60` GB or higher and click **Next: Add Tags**. 
+1. Optionally add some Tags (e.g. `app = datapane`) and click **Next: Configure Security Group**.
+1. Set the network security groups for ports `22` and `8090`, with sources set to `0.0.0.0/0` and `::/0`, and click **Review and Launch**. By default on a vanilla EC2, Datapane will run on port `8090`. If you are running Datapane behind a load balancer, also open the required ports you will be usined. 
+1. On the **Review Instance Launch** screen, click **Launch** to start your instance. Optionally download your keypair for connecting to your instance.
 
-#### dp-server setup
-1. From your command line tool, SSH into your EC2 instance.
+#### Datapane Server Setup
+1. SSH into your EC2 instance, or connect to it through the AWS UI.
+2. If `git` is not included in your distribution, install it using your package manager.
 1. Run the command `git clone https://github.com/datapane/datapane-onpremise.git`.
 1. Run the command `cd datapane-onpremise` to enter the cloned repository's directory.
-1. Edit the `Dockerfile` to set the version of Datapane you want to install. To do this, replace `X.Y.Z` in `FROM datapane/dp-server:X.Y.Z` with your desired version. See [Select a Datapane version number](#select-a-datapane-version-number) to help you choose a version.
-1. Install Docker and Docker Compose and run `dp-setup.py check` to check the installation is valid.
-1. Run `dp-setup.py setup` to launch the setup wizard that will generate your `docker.env` file
-1. In your `docker.env` (this file is only created after running `dp-setup.py setup`) add the following:
+1. If they are not installed, install both Docker and Docker Compose. Ensure the Docker daemon is running. If you are not running as root, ensure that [your user has the correct permissions](https://stackoverflow.com/questions/47854463/docker-got-permission-denied-while-trying-to-connect-to-the-docker-daemon-socke).
+1. `python3 dp-setup.py check` to check the installation is valid. 
+1. Run `python3 dp-setup.py configure` to launch the setup wizard and and select the production option. This will generate your `datapane.env` file, which contains your environment.
+<!--1. In your `docker.env` (this file is only created after running `dp-setup.py setup`) add the following:
     ```
     # License key granted to you by Datapane
     LICENSE_KEY=YOUR_LICENSE_KEY 
     ```
-1. Run `sudo docker-compose pull` to pull all the images
-1. Run `sudo docker-compose run server ./reset.sh`
-1. (Optional) Run `docker-compose run server make test-org`
+-->
+1. Edit your `datapane.env ` file to add the following information:
+  - Your database credentials
+  - S3 bucket name, region, and access keys
+  - The full external URL your server will be accessed on, including the protocol and port. 
+  - [Optional] You can optionally change the redis location to use a third-party cache, although we do not recommend this for most installs
+1. [Optional] Edit the `docker-compose.yml` to set the version of Datapane you want to install. To do this, replace `X.Y.Z` in `FROM datapane/dp-server:X.Y.Z` with your desired version. See [Select a Datapane version number](#select-a-datapane-version-number) to help you choose a version.
+1. Run `docker-compose run server ./reset.sh` to reset your Datapane instance and create the initial database and users.
 1. Run `sudo docker-compose up -d` to start the Datapane server.
 1. Run `sudo docker-compose ps` to make sure all the containers are up and running.
-1. Navigate to your server's IP address in a web browser. Datapane should now be running on port `3000`.
-1. Click Sign Up, since we're starting from a clean slate. The first user to into an instance becomes the administrator. 
+1. Navigate to your server's IP address in a web browser. Datapane should now be running on port `8090`.
+1. Login to your instance using the credentials in [next steps](#next-steps)
+
+#### Load Balancer (Optional)
+It it recommended that you run your cloud instance behind a load balancer such as ELB, which can provide SSL termination. If you use a load balancer, make sure to update the `DOMAIN` setting in your `datapane.env` file to point to your new external URL (including the port and protocol - e.g. `https://your-datapane-server.your-company.com:8000`)
 
 ### Deploying on Heroku
 
@@ -146,13 +159,54 @@ Spin up a new EC2 instance. If using AWS, use the following steps:
 
 🚧 **Coming Soon**
 
-## Managed on-prem deployments
+## Managed deployments
 
 🚧 **Coming Soon**
 
+<!--
 Deploy Datapane on a managed service. We're working on providing some starter template files for Cloudformation setups (ECS + Fargate), Kubernetes, and Helm.
 
-Additionally, we hope to be available in the AWS, Azure, and GCS marketplaces shortly.
+Additionally, we hope to be available in the AWS, Azure, and GCS marketplaces shortly.-->
+
+## Additional features
+
+**For details on additional features like SAML SSO, custom certs, and more, visit our [deployment docs](https://docs.datapane.com/deployment).**
+
+### Environment Variables
+
+You can set environment variables to enable custom functionality like storage backends, customizing logs, and much more. For a list of all environment variables visit our [docs](https://docs.datapane.com/deployment/environment-variables).
+
+### Health check endpoint 
+
+<!-- TODO: Add other watchman endpoint -->
+
+Datapane also has a health check endpoint that you can set up to monitor liveliness of Datapane. You can configure your probe to make a `GET` request to `/site/watchman/`.
+
+<!--## Troubleshooting
+
+- 
+-->
+## Updating Datapane
+
+The latest Datapane releases can be pulled from Docker Hub. When you run an on-premise instance of Datapane, you’ll need to pull an updated image in order to get new features and fixes. 
+
+<!--See more information on our different versions and recommended update strategies in [our documentation](https://docs.datapane.com/deployment).
+-->
+
+### Updating Docker Compose deployments
+Update the version number in your `docker-compose.yml`.
+```
+FROM datapane/dp-server:X.Y.Z
+```
+Then run the included update command `dp-setup.py update` from this directory.
+
+<!--### Kubernetes deployments
+To update Datapane on Kubernetes, you can use the following command, replacing `X.Y.Z` with the version number or named tag that you’d like to update to.
+
+```
+kubectl set image deploy/api api=datapane/dp-server:X.Y.Z
+```
+-->
 
 ## Next Steps
 
@@ -165,45 +219,6 @@ By default there are 2 users created,
 The `admin` user also has permissions to access the management panel, available at `/dp-admin/` - however be aware when working with the management panel.
 
 We recommend changing the admin password immediately once logged-in from the settings page, and inviting and using extra users rather than using the admin user for day-to-day usage.
-
-## Additional features
-
-**For details on additional features like SAML SSO, custom certs, and more, visit our [deployment docs](https://docs.datapane.com/deployment).**
-
-### Environment Variables
-
-You can set environment variables in the `datapane.env` file to enable custom functionality like storage backends, customizing logs, and much more. For a list of all environment variables visit our [docs](https://docs.datapane.com/deployment/environment-variables).
-
-### Health check endpoint 
-
-<!-- TODO: Add other watchman endpoint -->
-
-Datapane also has a health check endpoint that you can set up to monitor liveliness of Datapane. You can configure your probe to make a `GET` request to `/site/watchman/`.
-
-## Troubleshooting
-
-- ...
-
-## Updating Datapane
-
-The latest Datapane releases can be pulled from Docker Hub. When you run an on-premise instance of Datapane, you’ll need to pull an updated image in order to get new features and fixes. 
-
-See more information on our different versions and recommended update strategies in [our documentation](https://docs.datapane.com/deployment).
-
-### Docker Compose deployments
-Update the version number in the first line of your `Dockerfile`.
-
-```
-FROM datapane/dp-server:X.Y.Z
-```
-Then run the included update command `dp-setup.py update` from this directory.
-
-### Kubernetes deployments
-To update Datapane on Kubernetes, you can use the following command, replacing `X.Y.Z` with the version number or named tag that you’d like to update to.
-
-```
-kubectl set image deploy/api api=datapane/dp-server:X.Y.Z
-```
 
 ## Releases
 
