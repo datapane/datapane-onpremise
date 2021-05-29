@@ -163,7 +163,7 @@ Additionally, we hope to be available in the AWS, Azure, and GCS marketplaces sh
 
 ## Environment Variables
 
-You can set environment variables to enable custom functionality like storage backends, customizing logs, and much more. 
+You can set environment variables in the `datapane.env` to enable custom functionality like storage backends, customizing logging, email, and more.
 
 | Name             | Default                        | Description                                                                                  | 
 | -----------------|--------------------------------|----------------------------------------------------------------------------------------------| 
