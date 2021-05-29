@@ -10,24 +10,6 @@ Deploying Datapane on-premise ensures that all access to internal data is manage
 
 We also provide a fully-managed hosted version of Datapane - this is always up-to-date and managed by the Datapane team. Furthermore we offer _Datapane Enterprise_, where our team will work with yourself to customise, install, and manage Datapane on your own infrastructure. For information on either option, see our [pricing page](https://datapane.com/pricing/).
 
-# Table of contents
-- [Select a Datapane version number](#select-a-datapane-version-number)
-- [Simple deployments](#simple-deployments)
-   - [Docker-compose](#docker-compose)
-- [Cloud deployments](#cloud-deployments)
-    - [AWS](#deploying-on-aws)
-    - [Heroku](#deploying-on-heroku)
-    - [Aptible](#running-datapane-using-aptible)
-    - [Render](#deploying-to-render)
-- [Managed deployments](#managed-deployments)
-- [Additional features](#additional-features)
-    - [Health check endpoint](#health-check-endpoint)
-    - [Environment variables](#environment-variables)
-- [Troubleshooting](#troubleshooting)
-- [Updating Datapane](#updating-datapane)
-- [Releases](#releases)
-- [Docker cheatsheet](#docker-cheatsheet)
-
 ## Select a Datapane version number
 We recommend you set your Datapane deployment to a specific version of Datapane (that is, a specific semver version number in the format `X.Y.Z`, instead of a tag name). This will help prevent unexpected behavior in your Datapane instances. When you are ready to upgrade Datapane, you can bump the version number to the specific new version you want.
 
@@ -38,7 +20,7 @@ To help you select a version, see our [changelog](https://docs.datapane.com/reso
 </a>
 
 
-## dp-setup
+# dp-setup
 
 `dp-setup.py` is a simple Python 3 script to help manage setup your Datapane Server on-premise installation.
 
@@ -52,12 +34,12 @@ It currently supports docker-compose deployments and has 3 main commands,
 To use, follow the deployment instructions below.
 
 
-## Simple Deployments
+# Deployments
 
 Get set up in 15 minutes by deploying Datapane on a single machine. 
 
 
-### Docker compose
+## Docker compose
 
 1. Obtain access to a Linux-based machine capable of running datapane
    1. This can be a cloud VM, a bare-metal VM, your local Linux installation, or even an instance of Docker Desktop for Windows / Mac
@@ -73,6 +55,7 @@ Get set up in 15 minutes by deploying Datapane on a single machine.
     LICENSE_KEY=YOUR_LICENSE_KEY 
     ```
 -->
+1. (Optional) Edit the `datapane.env` as needed - see the [environment variables](#environemnt_variables) for more information.
 1. (Optional) Edit the `docker-compose.yaml` file to set the version of Datapane you want to install. To do this, replace `X.Y.Z` in `FROM datapane/dp-server:X.Y.Z` with your desired version. See [Select a Datapane version number](#select-a-datapane-version-number) to help you choose a version.
 1. Run `docker-compose run server ./reset.sh`. This will populate the datapane server with the initial users and settings - you can run this whenever you want reset your instance.
 1. Run `docker-compose up -d` to start the Datapane server.
@@ -137,6 +120,8 @@ Spin up a new EC2 instance. If using AWS, use the following steps:
   - S3 bucket name, region, and access keys
   - The full external URL your server will be accessed on, including the protocol and port. 
   - [Optional] You can optionally change the redis location to use a third-party cache, although we do not recommend this for most installs
+  - SMTP credentials if you want email support (see below)
+  - see the [environment variables](#environemnt_variables) for more information
 1. [Optional] Edit the `docker-compose.yml` to set the version of Datapane you want to install. To do this, replace `X.Y.Z` in `FROM datapane/dp-server:X.Y.Z` with your desired version. See [Select a Datapane version number](#select-a-datapane-version-number) to help you choose a version.
 1. Run `docker-compose run server ./reset.sh` to reset your Datapane instance and create the initial database and users.
 1. Run `sudo docker-compose up -d` to start the Datapane server.
@@ -144,8 +129,12 @@ Spin up a new EC2 instance. If using AWS, use the following steps:
 1. Navigate to your server's IP address in a web browser. Datapane should now be running on port `8090`.
 1. Login to your instance using the credentials in [next steps](#next-steps)
 
+#### Email
+You will need an email server bin order to invite external users and receive notifcations - you can use AWS SES for this. Simply edit `datapane.env` and set the `EMAIL_URL` setting to your SMTP connection string. You can also edit `SERVER_EMAIL` to modify the adddress that emails are sent from.
+
 #### Load Balancer (Optional)
 It it recommended that you run your cloud instance behind a load balancer such as ELB, which can provide SSL termination. If you use a load balancer, make sure to update the `DOMAIN` setting in your `datapane.env` file to point to your new external URL (including the port and protocol - e.g. `https://your-datapane-server.your-company.com:8000`)
+
 
 ### Deploying on Heroku
 
@@ -172,11 +161,42 @@ Additionally, we hope to be available in the AWS, Azure, and GCS marketplaces sh
 
 **For details on additional features like SAML SSO, custom certs, and more, visit our [deployment docs](https://docs.datapane.com/deployment).**
 
-### Environment Variables
+## Environment Variables
 
-You can set environment variables to enable custom functionality like storage backends, customizing logs, and much more. For a list of all environment variables visit our [docs](https://docs.datapane.com/deployment/environment-variables).
+You can set environment variables to enable custom functionality like storage backends, customizing logs, and much more. 
 
-### Health check endpoint 
+| Name             | Default                        | Description                                                                                  | 
+| -----------------|--------------------------------|----------------------------------------------------------------------------------------------| 
+| `DATABASE_URL`   | `postgres://postgres:postgres@db:5432/datapane` | Database connection string for a postgres database, using psql format       | 
+| `REDIS_HOST`   | `redis` | Redis connection string, set if using an external redis caching layer | 
+| `AWS_ACCESS_KEY_ID`   | - | AWS credentials | 
+| `AWS_SECRET_ACCESS_KEY`   | - | AWS credentials | 
+| `AWS_STORAGE_BUCKET_NAME`   | - |  Name of the bucket on AWS | 
+| `AWS_S3_REGION_NAME`   | `us-east-1` |  Set to your S3 region | 
+| `AWS_S3_ENDPOINT_URL`   | - |  Set if using a thrid-party S3 API | 
+| `EMAIL_URL` | `submission://user:pass@smtp.example.com` | SMTP connection string |
+| `SERVER_EMAIL` | `datapane@datapane.com` | Email address to send notifications from |
+| `DOMAIN` | - | Set to the full (external) domain where Datapane Server will be accessed |
+| `DP_TENANT_NAME` | `datapane` | The name of your instance |
+| `LOG_LEVEL` | `INFO` | Set to `DEBUG`, `INFO`, or `WARNING` to set the logging level |
+
+
+# Next Steps
+
+Once you have Datapane Server installed and running, you'll want to get invite users, setup groups, and more - please see the [getting started docs](https://docs.datapane.com/datapane-teams)
+
+By default there are 2 users created, 
+- `admin` (password `admin-stackhut`) - this is the instance superuser with full permissions.
+- `datapane` (password `datapane-stackhut`) - a demo user which is used to create all the examples and demos. This user has no permissions and can safely be deleted if needed.
+
+The `admin` user also has permissions to access the management panel, available at `/dp-admin/` - however be aware when working with the management panel.
+
+We recommend changing the admin password immediately once logged-in from the settings page, and inviting and using extra users rather than using the admin user for day-to-day usage.
+
+
+
+
+## Health check endpoint 
 
 <!-- TODO: Add other watchman endpoint -->
 
@@ -208,18 +228,6 @@ kubectl set image deploy/api api=datapane/dp-server:X.Y.Z
 ```
 -->
 
-## Next Steps
-
-Once you have Datapane Server installed and running, you'll want to get invite users, setup groups, and more - please see the [getting started docs](https://docs.datapane.com/datapane-teams)
-
-By default there are 2 users created, 
-- `admin` (password `admin-stackhut`) - this is the instance superuser with full permissions.
-- `datapane` (password `datapane-stackhut`) - a demo user which is used to create all the examples and demos. This user has no permissions and can safely be deleted if needed.
-
-The `admin` user also has permissions to access the management panel, available at `/dp-admin/` - however be aware when working with the management panel.
-
-We recommend changing the admin password immediately once logged-in from the settings page, and inviting and using extra users rather than using the admin user for day-to-day usage.
-
 ## Releases
 
 Release notes can be found at https://docs.datapane.com/resources/changelog.
@@ -228,14 +236,14 @@ Release notes can be found at https://docs.datapane.com/resources/changelog.
 
 Below is a cheatsheet for useful Docker commands. Note that you may need to prefix them with `sudo`. 
 
-| Command                     | Description                                                                                                                     | 
+| Command                     | Description                                                                                                                   | 
 | ----------------------------|-------------------------------------------------------------------------------------------------------------------------------| 
 | `docker-compose up -d`      | Builds, (re)creates, starts, and attaches to containers for a service. `-d`allows containers to run in background (detached). | 
 | `docker-compose down`       | Stops and remove containers and networks                                                                                      |
 | `docker-compose stop`       | Stops containers, but does not remove them and their networks                                                                 |
 | `docker ps -a`              | Display all Docker containers                                                                                                 |
-| `docker-compose ps -a`      | Display all containers related to images declared in the `docker-compose` file. 
-| `docker logs -f <container_name>` | Stream container logs to stdout                                                                                     |
+| `docker-compose ps -a`      | Display all containers related to images declared in the `docker-compose` file.                                               |
+| `docker logs -f <container_name>` | Stream container logs to stdout                                                                                         |
 | `docker exec -it <container_name> psql -U <postgres_user> -W <postgres_password> <postgres_db>` | Runs `psql` inside a container                            |
 | `docker kill $(docker ps -q)` | Kills all running containers                                                                                                |
 | `docker rm $(docker ps -a -q)` | Removes all containers and networks                                                                                        |
