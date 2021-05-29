@@ -22,4 +22,4 @@ dmypy.json
 # datapane specific
 /datapane.env*
 /docker-compose.yml
-
+/nginx.conf
