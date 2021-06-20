@@ -50,7 +50,7 @@ services:
       - redis
 
   redis:
-    image: redis:5-alpine
+    image: redis:6.0-alpine
     restart: unless-stopped
     expose:
       - 6379
@@ -58,8 +58,9 @@ services:
     #ports:
     #  - "6379:6379"
     volumes:
-      - "redis_5_data:/data:Z"
-    command: ["redis-server", "--maxmemory", "64mb", "--maxmemory-policy", "allkeys-lru", "--appendonly", "yes"]
+      - "redis_6_data:/data:Z"
+    command: ["redis-server", "--maxmemory", "64mb", "--maxmemory-policy", "allkeys-lru",
+              "--appendonly", "yes", "--timeout", "43200"]
 
 volumes:
-  redis_5_data:
+  redis_6_data:
